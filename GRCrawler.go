@@ -12,10 +12,10 @@ type response struct {
     code int
 }
 
-func request(url string, index int, chanResponse chan<- response) {
-    resp, _ := http.Get(url)
+func request(url *string, index *int, chanResponse chan<- response) {
+    resp, _ := http.Get(*url)
     defer resp.Body.Close()
-    chanResponse <- response{url, index, resp.StatusCode};
+    chanResponse <- response{*url, *index, resp.StatusCode};
 }
 
 func main() {
@@ -25,7 +25,7 @@ func main() {
     
     // setup async requests
     for index, url := range strUrls {
-        go request(url, index, chanResponse)
+        go request(&url, &index, chanResponse)
     }
     
     // wait for answers
