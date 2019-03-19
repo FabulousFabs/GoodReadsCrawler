@@ -56,7 +56,7 @@ func (b *RGoodReadsBook) Handle(books []string) bool {
     }
     
     // get results
-    results := b.httphandler.Handle(targets, 5)
+    results := b.httphandler.Handle(targets, 1)
     
     // setup channels + make sure we close them
     b.chanJob = make(chan GRBookJob, len(results))

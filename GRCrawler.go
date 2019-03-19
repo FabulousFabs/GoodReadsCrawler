@@ -1,3 +1,9 @@
+/* PSA:
+ * Currently throttled. Using one worker only, because the API soft bans for excessive use.
+ * Change in ResponseHandler.go:59 if you want to.
+ * @to-do: Support for multiple API keys?
+ */
+
 package main
 
 import (
@@ -5,6 +11,7 @@ import (
     "time"
     "bufio"
     "os"
+    "math"
 )
 
 func input(arg ... bool) string  {
@@ -40,22 +47,22 @@ func main() {
     log("Starting to crawl.")
     poisonpill := false
     go crawl(&httphandler, &keywordhandler, &poisonpill, b.next)
-    
     log("I'm crawling. Press any key to stop.")
+    
     input(false)
     poisonpill = true
     
     keywordhandler.Collapse()
     log(fmt.Sprintf("Keywords total (unique): %d", len(keywordhandler.keywords)))
-    /*for _, kw := range keywordhandler.keywords {
-        log(kw)
-    }*/
+    
+    export(base, &keywordhandler)
 }
 
 func crawl(httphandler *HttpHandler, keywordhandler *KeywordHandler, poisonpill *bool, next []string) {
+    defer log("Alright, I stopped crawling.")
+    
     for {
         if *poisonpill {
-            log("Alright, I stopped crawling.")
             break
         }
         
@@ -67,4 +74,42 @@ func crawl(httphandler *HttpHandler, keywordhandler *KeywordHandler, poisonpill 
         
         next = b.next
     }
+}
+
+func export(base string, keywordhandler *KeywordHandler) {
+    log("Exporting your keywords.")
+    
+    files := int(math.Ceil(float64(len(keywordhandler.keywords)) / float64(999)))
+    
+    fmt.Println(files)
+    
+    for i := 0; i < files; i++ {
+        name := fmt.Sprintf("/users/fabianschneider/desktop/programming/go/GRCrawler/export/%s_%d.txt", base, i)
+        f, err := os.Create(name)
+        if err != nil {
+            fmt.Println(err)
+        }
+        bytes := []byte{}
+        for index, kw := range keywordhandler.keywords {
+            if index > i * 998 + 998 {
+                break
+            }
+            if index > i * 998 && index < i * 998 + 998 {
+                str := fmt.Sprintf("%s\n", kw)
+                bb := []byte(str)
+                
+                for _, bbb := range bb {
+                    bytes = append(bytes, bbb)
+                }
+            }
+        }
+        b, err2 := f.Write(bytes)
+        if err2 != nil {
+            fmt.Println(err2)
+        }
+        f.Close()
+        log(fmt.Sprintf("File%d of %d: %d bytes written.", (i+1), files, b))
+    }
+    
+    log("Done! Hope it works well. Bye now!")
 }
