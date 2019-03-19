@@ -35,11 +35,18 @@ func (keywordhandler *KeywordHandler) Slice(keyword string) []string {
 }
 
 func (keywordhandler *KeywordHandler) Sanitize(keyword string) string {
+    // sanitize for AMS
     re := regexp.MustCompile(`[^a-zA-Z0-9\' ]+`)
     keyword = re.ReplaceAllString(keyword, "")
     re = regexp.MustCompile(`[ ]+`)
     keyword = re.ReplaceAllString(keyword, " ")
     keyword = strings.TrimSpace(keyword)
+    
+    // shorten for AMS
+    if len(keyword) > 60 {
+        keyword = keyword[:60]
+    }
+    
     return keyword
 }
 
