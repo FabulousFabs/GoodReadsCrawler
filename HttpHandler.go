@@ -1,15 +1,16 @@
 package main
 
-import "net/http"
-import "net/url"
-import "io/ioutil"
-import "github.com/PuerkitoBio/goquery"
-import "sort"
-import "fmt"
-import "strings"
-import "reflect"
-import "strconv"
-
+import (
+    "net/http"
+    "net/url"
+    "io/ioutil"
+    "github.com/PuerkitoBio/goquery"
+    "sort"
+    "fmt"
+    "strings"
+    "reflect"
+    "strconv"
+)
 
 type job struct {
     url string
@@ -32,7 +33,7 @@ type HttpHandler struct {
     proxies []proxy
 }
 
-// supply []string{target urls}, int maximumworkers[, bool useProxy]
+// supply []string{target urls}, int maximumworkers[, bool useProxy, bool fakeAgent]
 func (httphandler HttpHandler) Handle(targets []string, workers int, options ... bool) []response {
     useProxy := false
     maxProxy := 0
@@ -200,8 +201,6 @@ func workerProxy(index int, chanProxy chan proxy, chanJob chan job, chanResponse
             req.Header.Add("User-Agent", `Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.27 Safari/537.36`)
         }
         resp, errGet := client.Do(req)
-        
-        
         contents, errIO := ioutil.ReadAll(resp.Body)
         
         if errGet != nil || errIO != nil {
