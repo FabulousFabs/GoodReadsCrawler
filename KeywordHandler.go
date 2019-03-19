@@ -57,28 +57,26 @@ func (keywordhandler *KeywordHandler) Include(keyword string) {
     }
 }
 
-func inArray(a string, b []string) bool {
-    for _, c := range b {
-        if c == a {
+func (keywordhandler *KeywordHandler) Includes(keyword string) bool {
+    for _, kw := range keywordhandler.keywords {
+        if kw == keyword {
             return true
         }
     }
     return false
 }
 
-func (keywordhandler *KeywordHandler) Includes(keyword string) bool {
-    return inArray(keyword, keywordhandler.keywords)
-}
-
 func (keywordhandler *KeywordHandler) Collapse() []string {
-    var temp []string
+    enc := map[string]bool{}
+    kws := []string{}
     
     for _, keyword := range keywordhandler.keywords {
-        if !inArray(keyword, keywordhandler.keywords) {
-            temp = append(temp, keyword)
+        if enc[keyword] == false {
+            enc[keyword] = true
+            kws = append(kws, keyword)
         }
     }
     
-    keywordhandler.keywords = temp
-    return keywordhandler.keywords
+    keywordhandler.keywords = kws
+    return kws
 }

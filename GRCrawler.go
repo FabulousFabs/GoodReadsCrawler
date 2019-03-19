@@ -29,7 +29,7 @@ func main() {
     base := input()
     log(fmt.Sprintf("Okay. I'm working on '%s', then. Thanks very much!", base))
     keywordhandler.Include(base)
-    kws := keywordhandler.keywords
+    kws := keywordhandler.Collapse()
     for _, kw := range kws {
         fmt.Println(kw)
     }
