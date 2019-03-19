@@ -117,11 +117,17 @@ func (httphandler HttpHandler) Handle(targets []string, workers int, options ...
 func worker(index int, chanJob <-chan job, chanResponse chan<- response, agent bool){
     for job := range chanJob {
         client := &http.Client{}
-        req, _ := http.NewRequest("GET", job.url, nil)
+        req, err := http.NewRequest("GET", job.url, nil)
         if agent {
             req.Header.Add("User-Agent", `Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.27 Safari/537.36`)
         }
-        resp, _ := client.Do(req)
+        if err != nil {
+            fmt.Println(err)
+        }
+        resp, err2 := client.Do(req)
+        if err2 != nil {
+            fmt.Println(err2)
+        }
         contents, _ := ioutil.ReadAll(resp.Body)
         chanResponse <- response{job.url, job.index, resp.StatusCode, string(contents)}
         resp.Body.Close()

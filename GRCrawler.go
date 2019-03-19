@@ -7,10 +7,10 @@ import (
     "os"
 )
 
-var strUrls = []string{"https://google.com", "https://facebook.com", "https://amazon.com", "https://golang.com", "https://goodreads.com"}
-var strUrls2 = []string{"https://jimhodgson.com", "https://github.com", "https://uni-giessen.de", "https://netflix.com", "https://audible.com", "https://twitter.com", "https://instagram.com"}
-
-func input() string  {
+func input(arg ... bool) string  {
+    if len(arg) == 0 {
+        fmt.Printf("> ")
+    }
     reader := bufio.NewReader(os.Stdin)
     in, _ := reader.ReadString('\n')
     return in[:len(in)-1]
@@ -22,15 +22,49 @@ func log(s string) {
 }
 
 func main() {
+    httphandler := HttpHandler{}
     keywordhandler := KeywordHandler{}
     
-    /* main menu */
+    // prompt baseline
     log("Give me the GR-ID baseline, please.")
     base := input()
     log(fmt.Sprintf("Okay. I'm working on '%s', then. Thanks very much!", base))
-    keywordhandler.Include(base)
-    kws := keywordhandler.Collapse()
-    for _, kw := range kws {
-        fmt.Println(kw)
+    
+    // load baseline from GR API
+    b := RGoodReadsBook{}
+    b.Setup(&keywordhandler, &httphandler)
+    b.Handle([]string{base})
+    log("Loaded.")
+    
+    // start crawling in second thread
+    log("Starting to crawl.")
+    poisonpill := false
+    go crawl(&httphandler, &keywordhandler, &poisonpill, b.next)
+    
+    log("I'm crawling. Press any key to stop.")
+    input(false)
+    poisonpill = true
+    
+    keywordhandler.Collapse()
+    log(fmt.Sprintf("Keywords total (unique): %d", len(keywordhandler.keywords)))
+    /*for _, kw := range keywordhandler.keywords {
+        log(kw)
+    }*/
+}
+
+func crawl(httphandler *HttpHandler, keywordhandler *KeywordHandler, poisonpill *bool, next []string) {
+    for {
+        if *poisonpill {
+            log("Alright, I stopped crawling.")
+            break
+        }
+        
+        b := RGoodReadsBook{}
+        b.Setup(&*keywordhandler, &*httphandler)
+        b.Handle(next)
+        
+        log(fmt.Sprintf("Keywords total (generic): %d", len(keywordhandler.keywords)))
+        
+        next = b.next
     }
 }
