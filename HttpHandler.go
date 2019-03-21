@@ -177,7 +177,7 @@ func loadProxies(httphandler *HttpHandler, max int) {
         
         ip := tds.Get(0).FirstChild.Data
         port, _ := strconv.Atoi(tds.Get(1).FirstChild.Data)
-        url, _ := url.Parse(fmt.Sprintf("%s:%d", ip, port))
+        url, _ := url.Parse(fmt.Sprintf("http://%s:%d", ip, port))
         
         p = append(p, proxy{ip, port, url})
     })
