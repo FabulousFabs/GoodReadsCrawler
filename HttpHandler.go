@@ -177,18 +177,18 @@ func loadProxies(httphandler *HttpHandler, max int) {
         
         ip := tds.Get(0).FirstChild.Data
         port, _ := strconv.Atoi(tds.Get(1).FirstChild.Data)
-        url, _ := url.Parse(fmt.Sprintf("%s:%d", ip, port))
+        url, _ := url.Parse(fmt.Sprintf("http://%s:%d", ip, port)) //now parsing correctly
         
         p = append(p, proxy{ip, port, url})
     })
     
     // weed out bad proxies (tests)
     for _, pr := range p {
-        client := &http.Client{Transport: &http.Transport{Proxy: http.ProxyURL(pr.address)}}
+        client := &http.Client{Timeout: time.Duration(10 * time.Second), Transport: &http.Transport{Proxy: http.ProxyURL(pr.address)}}
         resp, err := client.Get("https://jsonplaceholder.typicode.com/todos/1")
-        resp.Body.Close()
         
         if err == nil {
+            defer resp.Body.Close()
             httphandler.proxies = append(httphandler.proxies, pr)
         }
         
